@@ -28,8 +28,8 @@ class Scheduler:
             time.sleep(current_process.burst_time)
             print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
             processes.append(current_process)
-        print(f'\nAverage Burst Time: {sum_burst_time * 1000 / len(processes)}')
-        print(f'Average Arrival Time: {sum_arrival_time * 1000 / len(processes)}')
+        print(f'\nAverage Burst Time: {round(sum_burst_time * 1000 / len(processes),4)}')
+        print(f'Average Arrival Time: {round(sum_arrival_time * 1000 / len(processes),4)}')
 
 class FCFS(Scheduler):
 
@@ -45,9 +45,18 @@ class FCFS(Scheduler):
 
 class SJF(Scheduler):
 
-    def SFJ_handle_queue(self):
-        print(min(self.process_queue))
-        self.process_queue.remove(min(self.process_queue))
+    def SJF_handle_queue(self):
+        print('SFJ Queue Scheduler:')
+        self.handle_processes()
+
+
+    def process_pick(self):
+        picked_process = self.process_queue[0]
+        for process in self.process_queue:
+            if process.burst_time < picked_process.burst_time:
+                picked_process = process
+        self.process_queue.remove(picked_process)
+        return picked_process
 
 class RR(Scheduler):
 
@@ -60,10 +69,10 @@ class PriorityQueue(Scheduler):
         pass
 
 
-fcfs = FCFS()
-p1 = Process(1,1,0,0)
-p2 = Process(2,1,0,0)
-p3 = Process(3,1,0,0)
+sjf = SJF()
+p1 = Process(1,5,0,0)
+p2 = Process(2,2,0,0)
+p3 = Process(3,3,0,0)
 lst = [p1,p2,p3]
-fcfs.load_processes(lst)
-fcfs.FCFS_handle_queue()
+sjf.load_processes(lst)
+sjf.SJF_handle_queue()
