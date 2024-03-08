@@ -13,33 +13,34 @@ class Scheduler:
     def load_processes(self,processes):
         self.process_queue.extend(processes)
 
+    def handle_processes(self):
+        start_time = time.time()
+        sum_arrival_time = 0
+        sum_burst_time = 0
+        processes = []
+        while self.process_queue:
+            current_process = self.process_pick()
+
+            current_process.arrival_time = round(time.time() - start_time,4)
+            sum_arrival_time += current_process.arrival_time
+            sum_burst_time += current_process.burst_time
+            spaces = round(current_process.burst_time * 1000 // 2)
+            time.sleep(current_process.burst_time)
+            print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
+            processes.append(current_process)
+        print(f'\nAverage Burst Time: {sum_burst_time * 1000 / len(processes)}')
+        print(f'Average Arrival Time: {sum_arrival_time * 1000 / len(processes)}')
 
 class FCFS(Scheduler):
 
     def FCFS_handle_queue(self):
         #clock start
-        start_time = time.time()
-        final_order = []
-        sum_arrival_time = 0
-        sum_burst_time = 0
         print('FCFS Queue Scheduler:')
-        while self.process_queue:
-            current_process = self.process_queue.pop(0)
-            #assing arrival time
-            current_process.arrival_time = round((time.time() - start_time),4)
-            sum_arrival_time += current_process.arrival_time
-            sum_burst_time += current_process.burst_time
-            #start timer = burst time
-            spaces = round(current_process.burst_time*1000//2)
-            time.sleep(current_process.burst_time)
-            print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
+        self.handle_processes()
 
-            #timer over? continue the loop (next process)
+    def process_pick(self):
+        return self.process_queue.pop(0)
 
-            final_order.append(current_process.pid)
-
-        print(f'\nAverage Burst Time: {sum_burst_time*1000/len(final_order)}')
-        print(f'Average Arrival Time: {sum_arrival_time*1000/len(final_order)}')
 
 
 class SJF(Scheduler):
@@ -61,7 +62,7 @@ class PriorityQueue(Scheduler):
 
 fcfs = FCFS()
 p1 = Process(1,1,0,0)
-p2 = Process(2,10,0,0)
+p2 = Process(2,1,0,0)
 p3 = Process(3,1,0,0)
 lst = [p1,p2,p3]
 fcfs.load_processes(lst)
