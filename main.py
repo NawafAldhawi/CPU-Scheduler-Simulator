@@ -15,21 +15,21 @@ class Scheduler:
     def handle_processes(self):
 
         sum_burst_time = 0
-        sum_waiting_time = 0
         processes = []
         total_turnaround_time = 0
+        total_waiting_time = 0
 
         while self.process_queue:
 
             current_process = self.process_pick()
 
-            waiting_time = sum_burst_time
+            waiting_time = sum_burst_time - current_process.arrival_time
+            total_waiting_time += waiting_time
             sum_burst_time += current_process.burst_time
 
             turnaround_time = sum_burst_time - current_process.arrival_time
             total_turnaround_time += turnaround_time
 
-            sum_waiting_time += waiting_time
 
 
             spaces = round(current_process.burst_time // 2)
@@ -37,7 +37,7 @@ class Scheduler:
             processes.append(current_process)
 
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time/len(processes)),3)}')
-        print(f'Average Waiting Time: {round((sum_waiting_time/len(processes)),3)}')
+        print(f'Average Waiting Time: {round((total_waiting_time/len(processes)),3)}')
         print(total_turnaround_time)
 
 
@@ -141,7 +141,7 @@ class RR(Scheduler):
 
 
 
-sjf = SJF()
+sjf = PriorityQueue()
 p1 = Process(1,3,0,1)
 p2 = Process(2,5,2,4)
 p3 = Process(3,9,3,2)
