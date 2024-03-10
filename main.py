@@ -26,7 +26,7 @@ class Scheduler:
             waiting_time = sum_burst_time
             sum_burst_time += current_process.burst_time
 
-            turnaround_time = sum_burst_time
+            turnaround_time = sum_burst_time - current_process.arrival_time
             total_turnaround_time += turnaround_time
 
             sum_waiting_time += waiting_time
@@ -34,10 +34,11 @@ class Scheduler:
 
             spaces = round(current_process.burst_time // 2)
             print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
-            processes.append([current_process,waiting_time])
+            processes.append(current_process)
 
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time/len(processes)),3)}')
         print(f'Average Waiting Time: {round((sum_waiting_time/len(processes)),3)}')
+        print(total_turnaround_time)
 
 
 class FCFS(Scheduler):
@@ -90,15 +91,60 @@ class PriorityQueue(Scheduler):
 
 class RR(Scheduler):
 
+    def handle_queue(self):
+        print('\nRR Queue Scheduler:\n')
+        self.handle_processes()
+
     def RR_handle_queue(self):
-        pass
+
+        waiting_time = 0
+        sum_burst_time = 0
+        processes = []
+        total_turnaround_time = 0
+
+
+
+        while self.process_queue:
+
+            current_process = self.process_pick()
+
+            if current_process.burst_time < current_process.quanta:
+                sum_burst_time += current_process.burst_time
+            else:
+                sum_burst_time += current_process.quanta
+
+            current_process.burst_time -= current_process.quanta
+            if current_process.burst_time <= 0:
+                current_process.quanta = current_process.burst_time + current_process.quanta
+
+                turn_around_time = sum_burst_time - current_process.arrival_time
+                waiting_time = turn_around_time - current_process.burst_time
+
+                total_turnaround_time += turn_around_time
+                self.process_queue.remove(current_process)
+                processes.append(current_process)
+            else:
+                self.process_queue.remove(current_process)
+                self.process_queue.append(current_process)
+
+
+            spaces = round(current_process.quanta // 2)
+            print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
+
+        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / len(processes)), 3)}')
+
+    def process_pick(self):
+        picked_process = self.process_queue[0]
+        for process in self.process_queue:
+            process.quanta = 3
+        return picked_process
 
 
 
 sjf = SJF()
-p1 = Process(1,1,1,1)
-p2 = Process(2,2,2,4)
-p3 = Process(3,3,3,2)
+p1 = Process(1,3,0,1)
+p2 = Process(2,5,2,4)
+p3 = Process(3,9,3,2)
 p4 = Process(4,12,4,5)
 lst = [p1,p2,p3,p4]
 sjf.load_processes(lst)
