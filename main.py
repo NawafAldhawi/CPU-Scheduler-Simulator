@@ -36,9 +36,8 @@ class Scheduler:
             print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
             processes.append(current_process)
 
-        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time/len(processes)),3)}')
-        print(f'Average Waiting Time: {round((total_waiting_time/len(processes)),3)}')
-        print(total_turnaround_time)
+        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time/len(processes)),4)}')
+        print(f'Average Waiting Time: {round((total_waiting_time/len(processes)),4)}')
 
 
 class FCFS(Scheduler):
@@ -93,15 +92,14 @@ class RR(Scheduler):
 
     def handle_queue(self):
         print('\nRR Queue Scheduler:\n')
-        self.handle_processes()
+        self.RR_handle_processes()
 
-    def RR_handle_queue(self):
+    def RR_handle_processes(self):
 
         waiting_time = 0
         sum_burst_time = 0
         processes = []
         total_turnaround_time = 0
-
 
 
         while self.process_queue:
@@ -113,25 +111,28 @@ class RR(Scheduler):
             else:
                 sum_burst_time += current_process.quanta
 
+
             current_process.burst_time -= current_process.quanta
+
             if current_process.burst_time <= 0:
+
                 current_process.quanta = current_process.burst_time + current_process.quanta
 
                 turn_around_time = sum_burst_time - current_process.arrival_time
-                waiting_time = turn_around_time - current_process.burst_time
-
                 total_turnaround_time += turn_around_time
                 self.process_queue.remove(current_process)
                 processes.append(current_process)
+
             else:
                 self.process_queue.remove(current_process)
                 self.process_queue.append(current_process)
 
-
+            total_waiting_time = total_turnaround_time - sum_burst_time
             spaces = round(current_process.quanta // 2)
             print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
 
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / len(processes)), 3)}')
+        print(f'Average Waiting Time: {round((total_waiting_time / len(processes)), 3)}')
 
     def process_pick(self):
         picked_process = self.process_queue[0]
@@ -141,11 +142,11 @@ class RR(Scheduler):
 
 
 
-sjf = PriorityQueue()
+sjf = SJF()
 p1 = Process(1,3,0,1)
 p2 = Process(2,5,2,4)
-p3 = Process(3,9,3,2)
-p4 = Process(4,12,4,5)
+p3 = Process(3,2,3,2)
+p4 = Process(4,19,4,5)
 lst = [p1,p2,p3,p4]
 sjf.load_processes(lst)
 sjf.handle_queue()
