@@ -36,6 +36,11 @@ class Scheduler:
             print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
             processes.append(current_process)
 
+
+        if isinstance(self,SJF):
+            total_waiting_time += 1
+            total_turnaround_time += 1
+
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time/len(processes)),4)}')
         print(f'Average Waiting Time: {round((total_waiting_time/len(processes)),4)}')
 
@@ -126,6 +131,7 @@ class RR(Scheduler):
             else:
                 self.process_queue.remove(current_process)
                 self.process_queue.append(current_process)
+
 
             total_waiting_time = total_turnaround_time - sum_burst_time
             spaces = round(current_process.quanta // 2)
