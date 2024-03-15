@@ -1,3 +1,5 @@
+
+from operator import attrgetter
 class Process:
 
     def __init__(self,pid,burst_time,arrival_time,prio,quanta=3):
@@ -29,10 +31,17 @@ class Scheduler:
             current_process = self.process_pick()
 
 
-            clock = sum_burst_time + 1      #Entry time of a process
+                #Entry time of a process
 
-            if sum_burst_time < current_process.arrival_time:
+            if  current_process.arrival_time > clock:
+                idle_time = abs(clock - current_process.arrival_time)
+                spaces = round(idle_time // 2)
+                print(f"[{clock}ms]",'-{', ' ' * spaces, '-', ' ' * spaces, '}-', end='')
                 clock = current_process.arrival_time
+
+
+
+
 
             #nonpremitve wait time of each process
             waiting_time = clock - current_process.arrival_time
@@ -50,13 +59,15 @@ class Scheduler:
 
             #visualisation of output
             spaces = round(current_process.burst_time // 2)
-            print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
-            processes.append(current_process)
+            print(f"[{clock}ms]",'-{', ' ' * spaces,'P', str(current_process.pid), ' ' * spaces, '}- ', end='')
 
+
+            processes.append(current_process)
+            clock += current_process.burst_time #clock moves #burst_time# long
 
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time/len(processes)),4)}')
         print(f'Average Waiting Time: {round((total_waiting_time/len(processes)),4)}')
-
+        print(f'Average Response Time: {round((total_waiting_time / len(processes)), 4)}')
 
 class FCFS(Scheduler):
 
@@ -66,10 +77,7 @@ class FCFS(Scheduler):
 
     def process_pick(self):
         #pick process with least arrival time then remove it from the queue
-        picked_process = self.process_queue[0]
-        for process in self.process_queue:
-            if process.arrival_time < picked_process.arrival_time:
-                picked_process = process
+        picked_process = min(self.process_queue, key=attrgetter('arrival_time'))
         self.process_queue.remove(picked_process)
         return picked_process
 
@@ -82,11 +90,13 @@ class SJF(Scheduler):
 
 
     def process_pick(self):
-        #pick process with least burst time then remove it from the queue
-        picked_process = self.process_queue[0]
+        min_process = min(self.process_queue, key=attrgetter('arrival_time'))
+        arrived_processes = []
         for process in self.process_queue:
-            if process.burst_time < picked_process.burst_time:
-                picked_process = process
+            if process.arrival_time == min_process.arrival_time:
+                arrived_processes.append(process)
+        picked_process = min(arrived_processes, key=attrgetter('burst_time'))
+        arrived_processes.remove(picked_process)
         self.process_queue.remove(picked_process)
         return picked_process
 
@@ -100,11 +110,13 @@ class PriorityQueue(Scheduler):
 
 
     def process_pick(self):
-        # pick process with highest priority (lowest prio number) then remove it from the queue
-        picked_process = self.process_queue[0]
+        min_process = min(self.process_queue, key=attrgetter('arrival_time'))
+        arrived_processes = []
         for process in self.process_queue:
-            if process.prio < picked_process.prio:
-                picked_process = process
+            if process.arrival_time == min_process.arrival_time:
+                arrived_processes.append(process)
+        picked_process = min(arrived_processes, key=attrgetter('prio'))
+        arrived_processes.remove(picked_process)
         self.process_queue.remove(picked_process)
         return picked_process
 
@@ -166,11 +178,11 @@ class RR(Scheduler):
 
 
 
-sjf = FCFS()
-p1 = Process(1,1,1,1)
-p2 = Process(2,2,2,2)
-p3 = Process(3,3,3,3)
-p4 = Process(4,4,30,4)
+sjf = SJF()
+p1 = Process(1,4,4,1)
+p2 = Process(2,35,15,2)
+p3 = Process(3,12,19,3)
+p4 = Process(4,4,0,4)
 lst = [p1,p2,p3,p4]
 sjf.load_processes(lst)
 sjf.handle_queue()
