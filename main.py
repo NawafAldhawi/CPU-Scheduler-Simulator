@@ -17,6 +17,7 @@ class Scheduler:
     def load_processes(self,processes):
         self.process_queue.extend(processes)
 
+
     def handle_processes(self):
 
         clock = 0                   #the time the process enters the cpu
@@ -122,66 +123,107 @@ class PriorityQueue(Scheduler):
 
 class RR(Scheduler):
 
+    def __init__(self):
+        super().__init__()
+        self.turn = 0
+        self.RR_arrived_processes = []
+
     def handle_queue(self):
         print('\nRR Queue Scheduler:\n')
         self.RR_handle_processes()
 
     def RR_handle_processes(self): #special handeling for RR
 
+        processes_initial_bursttime = {}
+        for process in self.process_queue:
+            processes_initial_bursttime[process.pid] = process.burst_time
+
+
+        global RR_clock
+        RR_clock = 0
         waiting_time = 0
         sum_burst_time = 0
         processes = []
         total_turnaround_time = 0
-
+        total_waiting_time = 0
 
         while self.process_queue:
 
+
+
             current_process = self.process_pick()
+
+
+            if  current_process.arrival_time > RR_clock:
+                idle_time = abs(RR_clock - current_process.arrival_time)
+                RR_clock = current_process.arrival_time
 
 
             if current_process.burst_time < current_process.quanta:
                 #when process burst time is less than the quanta then
                 #the time added to burst time is just the remaining burst
                 sum_burst_time += current_process.burst_time
+                time_slice = current_process.burst_time
             else:
                 #otherwise it is the full quanta
                 sum_burst_time += current_process.quanta
+                time_slice = current_process.quanta
 
 
             current_process.burst_time -= current_process.quanta
 
-            if current_process.burst_time <= 0: #means the process is fully executed
+            if current_process.burst_time <= 0 and current_process in self.process_queue: #means the process is fully executed
 
-                turn_around_time = sum_burst_time - current_process.arrival_time
-                total_turnaround_time += turn_around_time
+                process_FULL_burst_time = processes_initial_bursttime[current_process.pid]
+                waiting_time = RR_clock - current_process.arrival_time - process_FULL_burst_time + time_slice
+                last_burst = current_process.burst_time + current_process.quanta
+                total_waiting_time += waiting_time
+                turnaround_time = abs(RR_clock + last_burst - current_process.arrival_time)
+                total_turnaround_time += turnaround_time
+
                 self.process_queue.remove(current_process)
+                self.RR_arrived_processes.remove(current_process)
+
 
                 processes.append(current_process) #just a tracker list (used for len() )
 
+   
 
-            else:
-                #otherwise process is not finished send it back to the queue
-                self.process_queue.remove(current_process)
-                self.process_queue.append(current_process)
 
             #after all processes are done, the total waiting time = total turnaround time + total burst time
-            total_waiting_time = total_turnaround_time - sum_burst_time
             spaces = round(current_process.quanta // 2)
-            print('-{', ' ' * spaces, current_process.pid, ' ' * spaces, '}-', end='')
+            print(f"[{RR_clock}ms]", '-{', ' ' * spaces, 'P', str(current_process.pid), ' ' * spaces, '}- ', end='')
+            RR_clock += time_slice
 
-        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / len(processes)), 3)}')
-        print(f'Average Waiting Time: {round((total_waiting_time / len(processes)), 3)}')
+        print(f"[{RR_clock}ms]")
+        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / len(processes)), 4)}')
+        print(f'Average Waiting Time: {round((total_waiting_time / len(processes)), 4)}')
+        print(f'Average Response Time: {round((total_waiting_time / len(processes)), 4)}')
+
 
     def process_pick(self):
-        picked_process = self.process_queue[0]
+
+
+        for process in list(self.process_queue):
+            if process.arrival_time <= RR_clock and process not in self.RR_arrived_processes:
+                self.RR_arrived_processes.append(process)
+
+        picked_process = self.RR_arrived_processes[self.turn]
+        self.turn = (self.turn + 1) % len(self.RR_arrived_processes)
+
         return picked_process
 
 
 
-sjf = SJF()
-p1 = Process(1,4,4,1)
-p2 = Process(2,35,15,2)
-p3 = Process(3,12,19,3)
+
+
+
+
+
+sjf = RR()
+p1 = Process(1,9,5,1)
+p2 = Process(2,9,0,2)
+p3 = Process(3,5,0,3)
 p4 = Process(4,4,0,4)
 lst = [p1,p2,p3,p4]
 sjf.load_processes(lst)
