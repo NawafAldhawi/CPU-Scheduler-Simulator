@@ -184,24 +184,33 @@ class RR(Scheduler):
 
     def process_pick(self):
         temp = None
+        arrived = []
         for process in list(self.process_queue):
             if process.arrival_time <= RR_clock + 3 and process not in self.RR_arrived_processes:
                 #this deals with the case of a process being added to the ready queue before proccesses that arrived before it
-                self.RR_arrived_processes.append(process)
+                arrived.append(process)
                 process__ = process
 
+        arrived.sort( key=lambda process: process.arrival_time)
 
-        picked_process = self.RR_arrived_processes.pop(0)
+        for process in arrived:
+            self.RR_arrived_processes.append(process)
+
+        if self.RR_arrived_processes:
+            picked_process = self.RR_arrived_processes.pop(0)
+            return picked_process
+        else:
+            return min(self.process_queue, key=attrgetter('arrival_time'))
 
 
-        return picked_process
+
 
 
 queueTest = RR()
-p1 = Process(1, 9, 10, 1)
+p1 = Process(1, 9, 16, 1)
 p2 = Process(2, 9, 3, 2)
-p3 = Process(3, 5, 8, 3)
-p4 = Process(4, 4, 2, 4)
+p3 = Process(3, 5, 9, 3)
+p4 = Process(4, 4, 0, 4)
 lst = [p1, p2, p3, p4]
 queueTest.load_processes(lst)
 queueTest.handle_queue()
