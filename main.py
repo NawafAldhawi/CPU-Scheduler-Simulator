@@ -3,12 +3,12 @@ from operator import attrgetter
 
 class Process:
 
-    def __init__(self, pid, burst_time, arrival_time, prio, quanta=3):
+    def __init__(self, pid, burst_time, arrival_time, familiarity, quanta=3):
         self.pid = pid
         self.burst_time = burst_time
         self.arrival_time = arrival_time
-        self.prio = prio
         self.quanta = quanta
+        self.familiarity = familiarity
 
 
 class Scheduler:
@@ -178,6 +178,7 @@ class SRTF(Scheduler):
         last_process = None
         total_waiting_time = 0
         total_turnaround_time = 0
+        total_response_time = 0
         processes_initial_bursttime = {}
         count = 0
         print("\nSRTF Queue Scheduling:\n")
@@ -187,26 +188,98 @@ class SRTF(Scheduler):
         while True:
             if self.process_queue:
                 min_process = min(self.process_queue, key=attrgetter('arrival_time'))
+
             for process in self.process_queue:
-                if process.arrival_time == clock:
+                if process.arrival_time <= clock:
                     arrived_processes.append(process)
                     count += 1
                     self.process_queue.remove(process)
 
             if arrived_processes == []:
                 arrived_processes.append(min_process)
+                idle_time = min_process.arrival_time - clock
+                spaces = idle_time
+                print(f"[{clock}ms]", '-{', ' ' * spaces, '-', ' ' * spaces, '}- ', end='')
+                clock = min_process.arrival_time
+
 
             # for process in arrived_processes:
             #     print(process.pid,end=' ')
-            picked_process = min(arrived_processes, key=attrgetter('burst_time'))
 
+            picked_process = min(arrived_processes, key=attrgetter('burst_time'))
 
             if last_process != picked_process:
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
                 spaces = process_FULL_burst_time - picked_process.burst_time
                 print(f"[{clock}ms]", '-{', ' ' * spaces, 'P', str(picked_process.pid), ' ' * spaces, '}- ', end='')
 
+            initial_burst = processes_initial_bursttime[picked_process.pid]
+            if picked_process.burst_time == initial_burst:
+                response_time = clock - picked_process.arrival_time
+                total_response_time += response_time
 
+            picked_process.burst_time -= 1
+
+            if picked_process.burst_time <= 0:
+
+                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
+                waiting_time = clock + 1 - process_FULL_burst_time - picked_process.arrival_time
+                turnaround_time = clock + 1 - picked_process.arrival_time
+                total_waiting_time += waiting_time
+                total_turnaround_time += turnaround_time
+                arrived_processes.remove(picked_process)
+                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
+                spaces = process_FULL_burst_time - picked_process.burst_time
+
+
+                if not arrived_processes and not self.process_queue:
+                    break
+
+            clock += 1
+            last_process = picked_process
+        print(f"[{clock+1}ms]")
+        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time /count), 4)}')
+        print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
+        print(f'Average Response Time: {round((total_response_time / count), 4)}')
+
+
+
+class Regular_Visitors_Priority_Queue(Scheduler):
+
+    def handle_queue(self):
+
+        clock = 0
+        arrived_processes = []
+        last_process = None
+        total_waiting_time = 0
+        total_turnaround_time = 0
+        processes_initial_bursttime = {}
+        count = 0
+        print("\nRVPQ (Custom) Queue Scheduling:\n")
+        for process in self.process_queue:
+            processes_initial_bursttime[process.pid] = process.burst_time
+
+        while True:
+            if self.process_queue:
+                min_process = min(self.process_queue, key=attrgetter('arrival_time'))
+            for process in self.process_queue:
+                if process.arrival_time <= clock:
+                    arrived_processes.append(process)
+                    count += 1
+                    self.process_queue.remove(process)
+
+            if arrived_processes == []:
+                arrived_processes.append(min_process)
+                clock = min_process.arrival_time
+
+            # for process in arrived_processes:
+            #     print(process.pid,end=' ')
+            picked_process = max(arrived_processes, key=attrgetter('familiarity'))
+
+            if last_process != picked_process:
+                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
+                spaces = process_FULL_burst_time - picked_process.burst_time
+                print(f"[{clock}ms]", '-{', ' ' * spaces, 'P', str(picked_process.pid), ' ' * spaces, '}- ', end='')
 
             picked_process.burst_time -= 1
 
@@ -220,22 +293,21 @@ class SRTF(Scheduler):
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
                 spaces = process_FULL_burst_time - picked_process.burst_time
 
-
-                if not arrived_processes:
+                if not arrived_processes and not self.process_queue:
                     break
 
             clock += 1
             last_process = picked_process
-        print(f"[{clock+1}ms]")
-        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time /count), 4)}')
+        print(f"[{clock + 1}ms]")
+        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / count), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
 
 
-queueTest = SRTF()
-p1 = Process(1, 1, 7, 1)
-p2 = Process(2, 2, 1, 2)
-p3 = Process(3, 3, 3, 3)
-p4 = Process(4, 4, 0, 4)
+queueTest = Regular_Visitors_Priority_Queue()
+p1 = Process(1, 6, 1, 10)
+p2 = Process(2, 11, 0, 0)
+p3 = Process(3, 7, 1, 0)
+p4 = Process(4, 6, 8, 0)
 lst = [p1, p2, p3, p4]
 queueTest.load_processes(lst)
 queueTest.handle_queue()
