@@ -100,6 +100,7 @@ class RR(Scheduler):
         processes = []
         total_turnaround_time = 0
         total_waiting_time = 0
+        total_response_time = 0
 
         while self.process_queue:
 
@@ -110,6 +111,11 @@ class RR(Scheduler):
                 spaces = round(idle_time // 2)
                 print(f"[{RR_clock}ms]", '-{', ' ' * spaces, '-', ' ' * spaces, '}-', end='')
                 RR_clock = current_process.arrival_time
+
+            initial_burst = processes_initial_bursttime[current_process.pid]
+            if current_process.burst_time == initial_burst:
+                response_time = RR_clock - current_process.arrival_time
+                total_response_time += response_time
 
             if current_process.burst_time < current_process.quanta:
                 # when process burst time is less than the quanta then
@@ -147,7 +153,7 @@ class RR(Scheduler):
         print(f"[{RR_clock}ms]")
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / len(processes)), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / len(processes)), 4)}')
-        print(f'Average Response Time: {round((total_waiting_time / len(processes)), 4)}')
+        print(f'Average Response Time: {round((total_response_time / len(processes)), 4)}')
 
     def process_pick(self):
         temp = None
@@ -237,6 +243,7 @@ class SRTF(Scheduler):
 
             clock += 1
             last_process = picked_process
+
         print(f"[{clock+1}ms]")
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time /count), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
@@ -253,9 +260,10 @@ class Regular_Visitors_Priority_Queue(Scheduler):
         last_process = None
         total_waiting_time = 0
         total_turnaround_time = 0
+        total_response_time = 0
         processes_initial_bursttime = {}
         count = 0
-        print("\nRVPQ (Custom) Queue Scheduling:\n")
+        print("\nRVP(Custom) Queue Scheduling:\n")
         for process in self.process_queue:
             processes_initial_bursttime[process.pid] = process.burst_time
 
@@ -270,6 +278,8 @@ class Regular_Visitors_Priority_Queue(Scheduler):
 
             if arrived_processes == []:
                 arrived_processes.append(min_process)
+                idle_time = min_process.arrival_time - clock
+                print(f"[{clock}ms]", '-{', ' ' * spaces, '-', ' ' * spaces, '}- ', end='')
                 clock = min_process.arrival_time
 
             # for process in arrived_processes:
@@ -280,6 +290,11 @@ class Regular_Visitors_Priority_Queue(Scheduler):
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
                 spaces = process_FULL_burst_time - picked_process.burst_time
                 print(f"[{clock}ms]", '-{', ' ' * spaces, 'P', str(picked_process.pid), ' ' * spaces, '}- ', end='')
+
+            initial_burst = processes_initial_bursttime[picked_process.pid]
+            if picked_process.burst_time == initial_burst:
+                response_time = clock - picked_process.arrival_time
+                total_response_time += response_time
 
             picked_process.burst_time -= 1
 
@@ -301,6 +316,7 @@ class Regular_Visitors_Priority_Queue(Scheduler):
         print(f"[{clock + 1}ms]")
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / count), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
+        print(f'Average Response Time: {round((total_response_time / count), 4)}')
 
 
 queueTest = Regular_Visitors_Priority_Queue()
