@@ -60,6 +60,7 @@ class Scheduler:
             processes.append(current_process)
             clock += current_process.burst_time  # clock moves #burst_time# long
 
+        print(f"[{clock}ms]")
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / len(processes)), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / len(processes)), 4)}')
         print(f'Average Response Time: {round((total_waiting_time / len(processes)), 4)}')
@@ -191,7 +192,9 @@ class SRTF(Scheduler):
         total_turnaround_time = 0
         total_response_time = 0
         processes_initial_bursttime = {}
+        finished_processes = []
         count = 0
+        idle_flag = False
         print("\nSRTF Queue Scheduling:\n")
 
         for process in self.process_queue:
@@ -214,6 +217,7 @@ class SRTF(Scheduler):
                 spaces = idle_time
                 print(f"[{clock}ms]", '-{', ' ' * spaces, '-', ' ' * spaces, '}- ', end='')
                 clock = min_process.arrival_time
+                idle_flag = True
 
             # for process in arrived_processes:
             #     print(process.pid,end=' ')
@@ -235,20 +239,25 @@ class SRTF(Scheduler):
             if picked_process.burst_time <= 0:
 
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
-                waiting_time = abs(clock + 1 - process_FULL_burst_time - picked_process.arrival_time)
-                turnaround_time = abs(clock + 1 - picked_process.arrival_time)
-                total_waiting_time += waiting_time
-                total_turnaround_time += turnaround_time
-                arrived_processes.remove(picked_process)
-                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
-                spaces = process_FULL_burst_time - picked_process.burst_time
+                if len(finished_processes) <= 3:
+                    waiting_time = abs(clock + 1 - process_FULL_burst_time - picked_process.arrival_time)
+                    turnaround_time = abs(clock + 1 - picked_process.arrival_time)
+                    total_waiting_time += waiting_time
+                    total_turnaround_time += turnaround_time
+                    process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
+                    spaces = process_FULL_burst_time - picked_process.burst_time
 
+                    finished_processes.append(picked_process)
+                arrived_processes.remove(picked_process)
                 if not arrived_processes and not self.process_queue:
+
                     break
+
             clock += 1
             last_process = picked_process
 
-
+        if idle_flag == True:
+            clock -= 1
         print(f"[{clock + 1}ms]")
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / count), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
@@ -267,6 +276,10 @@ class Regular_Visitors_Priority_Queue(Scheduler):
         total_response_time = 0
         processes_initial_bursttime = {}
         count = 0
+        idle_flag = False
+        finished_processes = []
+
+
         print("\nRVP (Custom) Queue Scheduling:\n")
         for process in self.process_queue:
             processes_initial_bursttime[process.pid] = process.burst_time
@@ -305,37 +318,44 @@ class Regular_Visitors_Priority_Queue(Scheduler):
 
             picked_process.burst_time -= 1
 
-            if picked_process.burst_time == 0:
-                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
-                waiting_time = clock + 1 - process_FULL_burst_time - picked_process.arrival_time
-                turnaround_time = clock + 1 - picked_process.arrival_time
-                total_waiting_time += waiting_time
-                total_turnaround_time += turnaround_time
-                arrived_processes.remove(picked_process)
-                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
-                spaces = process_FULL_burst_time - picked_process.burst_time
+            if picked_process.burst_time <= 0:
 
+                process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
+                if len(finished_processes) <= 3:
+                    waiting_time = abs(clock + 1 - process_FULL_burst_time - picked_process.arrival_time)
+                    turnaround_time = abs(clock + 1 - picked_process.arrival_time)
+                    total_waiting_time += waiting_time
+                    total_turnaround_time += turnaround_time
+                    process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
+                    spaces = process_FULL_burst_time - picked_process.burst_time
+
+                    finished_processes.append(picked_process)
+                arrived_processes.remove(picked_process)
                 if not arrived_processes and not self.process_queue:
                     break
 
             clock += 1
             last_process = picked_process
+
+        if idle_flag == True:
+            clock -= 1
+
         print(f"[{clock + 1}ms]")
         print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / count), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
         print(f'Average Response Time: {round((total_response_time / count), 4)}')
 
 #TO RUN THE PROGRAM:
-queueTest = SRTF() #YOU CAN CHANGE THIS TO: FCFS(), RR(), Regular_Visitors_Priority_Queue()
+queueTest = RR() #YOU CAN CHANGE THIS TO: FCFS(), RR(), Regular_Visitors_Priority_Queue()
 
 #CHANGE PROCESSES ATTRIBUTES IN THIS ORDER:
 # pid, burst time, arrival time, familiarity#
-p1 = Process(1, 5, 1, 0)
-p2 = Process(2, 6, 0, 0)
-p3 = Process(3, 3, 8, 0)
+p1 = Process(1, 4, 1, 0)
+p2 = Process(2, 6, 0, 1)
+p3 = Process(3, 3, 8, 2)
 p4 = Process(4, 6, 5, 0)
 
-#HERE ADD/REMOVE PROCESSES 
+#HERE ADD/REMOVE PROCESSES
 lst = [p1, p2, p3, p4]
 queueTest.load_processes(lst)
 queueTest.handle_queue()
