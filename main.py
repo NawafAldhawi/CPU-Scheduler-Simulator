@@ -34,24 +34,22 @@ class Scheduler:
             # Entry time of a process
 
             if current_process.arrival_time > clock:
-
                 # visualisation of output
                 idle_time = abs(clock - current_process.arrival_time)
                 spaces = round(idle_time // 2)
                 print(f"[{clock}ms]", '-{', ' ' * spaces, '-', ' ' * spaces, '}-', end='')
-                #new clock
+                # new clock
                 clock = current_process.arrival_time
 
-
-            #waiting time calculation
+            # waiting time calculation
             waiting_time = clock - current_process.arrival_time
             if waiting_time < 0:
                 waiting_time = 0
             total_waiting_time += waiting_time
 
-            sum_burst_time += current_process.burst_time #
+            sum_burst_time += current_process.burst_time  #
 
-            #tunraround time calculation
+            # tunraround time calculation
             turnaround_time = abs(clock + current_process.burst_time - current_process.arrival_time)
             total_turnaround_time += turnaround_time
 
@@ -78,7 +76,6 @@ class FCFS(Scheduler):
         picked_process = min(self.process_queue, key=attrgetter('arrival_time'))
         self.process_queue.remove(picked_process)
         return picked_process
-
 
 
 class RR(Scheduler):
@@ -112,7 +109,6 @@ class RR(Scheduler):
             current_process = self.process_pick()
 
             if current_process.arrival_time > RR_clock:
-
                 idle_time = abs(RR_clock - current_process.arrival_time)
                 spaces = round(idle_time // 2)
                 print(f"[{RR_clock}ms]", '-{', ' ' * spaces, '-', ' ' * spaces, '}-', end='')
@@ -123,8 +119,7 @@ class RR(Scheduler):
                 response_time = RR_clock - current_process.arrival_time
                 total_response_time += response_time
 
-
-            #Time slice calculation
+            # Time slice calculation
             if current_process.burst_time < current_process.quanta:
                 # when process burst time is less than the quanta then
                 # the time added to burst time is just the remaining burst
@@ -153,7 +148,6 @@ class RR(Scheduler):
             else:
                 self.RR_arrived_processes.append(current_process)
 
-          
             spaces = round(current_process.quanta // 2)
             print(f"[{RR_clock}ms]", '-{', ' ' * spaces, 'P', str(current_process.pid), ' ' * spaces, '}- ', end='')
             RR_clock += time_slice
@@ -168,11 +162,10 @@ class RR(Scheduler):
         arrived = []
         for process in list(self.process_queue):
             if process.arrival_time <= RR_clock + 3 and process not in self.RR_arrived_processes:
-             
                 arrived.append(process)
                 process__ = process
 
-        arrived.sort( key=lambda process: process.arrival_time)
+        arrived.sort(key=lambda process: process.arrival_time)
 
         for process in arrived:
             self.RR_arrived_processes.append(process)
@@ -183,6 +176,7 @@ class RR(Scheduler):
         else:
             return min(self.process_queue, key=attrgetter('arrival_time'))
 
+
 class SRTF(Scheduler):
 
     def handle_queue(self):
@@ -190,8 +184,8 @@ class SRTF(Scheduler):
         clock = 0
         arrived_processes = []
 
-        last_process = None     #This variable is to keep track of preemptive change of processes
-                                #Uses: detect process change point
+        last_process = None  # This variable is to keep track of preemptive change of processes
+        # Uses: detect process change point
 
         total_waiting_time = 0
         total_turnaround_time = 0
@@ -204,6 +198,7 @@ class SRTF(Scheduler):
             processes_initial_bursttime[process.pid] = process.burst_time
 
         while True:
+
             if self.process_queue:
                 min_process = min(self.process_queue, key=attrgetter('arrival_time'))
 
@@ -226,11 +221,9 @@ class SRTF(Scheduler):
             picked_process = min(arrived_processes, key=attrgetter('burst_time'))
 
             if last_process != picked_process:
-
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
                 spaces = process_FULL_burst_time - picked_process.burst_time
                 print(f"[{clock}ms]", '-{', ' ' * spaces, 'P', str(picked_process.pid), ' ' * spaces, '}- ', end='')
-
 
             initial_burst = processes_initial_bursttime[picked_process.pid]
             if picked_process.burst_time == initial_burst:
@@ -242,26 +235,24 @@ class SRTF(Scheduler):
             if picked_process.burst_time <= 0:
 
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
-                waiting_time = clock + 1 - process_FULL_burst_time - picked_process.arrival_time
-                turnaround_time = clock + 1 - picked_process.arrival_time
+                waiting_time = abs(clock + 1 - process_FULL_burst_time - picked_process.arrival_time)
+                turnaround_time = abs(clock + 1 - picked_process.arrival_time)
                 total_waiting_time += waiting_time
                 total_turnaround_time += turnaround_time
                 arrived_processes.remove(picked_process)
                 process_FULL_burst_time = processes_initial_bursttime[picked_process.pid]
                 spaces = process_FULL_burst_time - picked_process.burst_time
 
-
                 if not arrived_processes and not self.process_queue:
                     break
-
-
+            clock += 1
             last_process = picked_process
 
-        print(f"[{clock+1}ms]")
-        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time /count), 4)}')
+
+        print(f"[{clock + 1}ms]")
+        print(f'\n\nAverage Turnaround Time: {round((total_turnaround_time / count), 4)}')
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
         print(f'Average Response Time: {round((total_response_time / count), 4)}')
-
 
 
 class Regular_Visitors_Priority_Queue(Scheduler):
@@ -334,13 +325,17 @@ class Regular_Visitors_Priority_Queue(Scheduler):
         print(f'Average Waiting Time: {round((total_waiting_time / count), 4)}')
         print(f'Average Response Time: {round((total_response_time / count), 4)}')
 
+#TO RUN THE PROGRAM:
+queueTest = SRTF() #YOU CAN CHANGE THIS TO: FCFS(), RR(), Regular_Visitors_Priority_Queue()
 
-queueTest = Regular_Visitors_Priority_Queue()
-#pid, burst time, arrival time, familiarity#
-p1 = Process(1, 3, 0, 0)
-p2 = Process(2, 1, 3, 0)
-p3 = Process(3, 4, 2, 0)
-p4 = Process(4, 5, 0, 0)
+#CHANGE PROCESSES ATTRIBUTES IN THIS ORDER:
+# pid, burst time, arrival time, familiarity#
+p1 = Process(1, 5, 1, 0)
+p2 = Process(2, 6, 0, 0)
+p3 = Process(3, 3, 8, 0)
+p4 = Process(4, 6, 5, 0)
+
+#HERE ADD/REMOVE PROCESSES 
 lst = [p1, p2, p3, p4]
 queueTest.load_processes(lst)
 queueTest.handle_queue()
