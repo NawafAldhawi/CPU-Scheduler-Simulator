@@ -7,7 +7,7 @@ To run the program you can simply modify the last 8 lines of the code accordingl
 queueTest = Regular_Visitors_Priority_Queue() #change to other queues: FCFS(), RR(), #STRF()
 
 #you can adjust processes attributes in this order#
-# pid, burst time, arrival time, familiarity#
+# pid, burst time, arrival time, familiarity# 
 p1 = Process(1, 3, 0, 0)
 p2 = Process(2, 1, 3, 0)
 p3 = Process(3, 4, 2, 0)
