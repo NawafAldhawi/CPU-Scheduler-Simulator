@@ -1,5 +1,7 @@
 # CPU-Scheduler-Simulator
-This program aims to simulate multiple different CPU scheduling algorithms (FCFS, RR, STRF,  Custom Queue).
+This program aims to simulate multiple different CPU scheduling algorithms (FCFS, RR, STRF,  Custom Queue), and
+calulate their Average turnaround, waiting, and response times, while also showing the order of execution
+through a Gaut Chart representation.
 
 To run the program you can simply modify the last 8 lines of the code accordingly:
 
