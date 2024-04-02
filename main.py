@@ -1,5 +1,6 @@
 from operator import attrgetter
-
+import argparse
+from operator import attrgetter
 
 class Process:
 
@@ -346,7 +347,8 @@ class Regular_Visitors_Priority_Queue(Scheduler):
         print(f'Average Response Time: {round((total_response_time / count), 4)}')
 
 #TO RUN THE PROGRAM:
-queueTest = RR() #YOU CAN CHANGE THIS TO: FCFS(), RR(), Regular_Visitors_Priority_Queue()
+
+queueTest = FCFS() #YOU CAN CHANGE THIS TO: FCFS(), RR(), Regular_Visitors_Priority_Queue()
 
 #CHANGE PROCESSES ATTRIBUTES IN THIS ORDER:
 # pid, burst time, arrival time, familiarity#
