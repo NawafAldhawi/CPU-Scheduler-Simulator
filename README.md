@@ -1,8 +1,8 @@
-# 🧠 CPU Scheduler Simulator
+#  CPU Scheduler Simulator
 
 This project simulates multiple CPU scheduling algorithms and analyzes their performance. It calculates **average turnaround time**, **waiting time**, and **response time**, and also generates a **Gantt chart** to visualize the order of process execution.
 
-## 💡 Features
+##  Features
 
 - Simulates the following CPU scheduling algorithms:
   - **First-Come, First-Served (FCFS)**
@@ -15,7 +15,7 @@ This project simulates multiple CPU scheduling algorithms and analyzes their per
   - **Average Response Time**
 - Displays a clear **Gantt Chart** of execution order
 
-## 🚀 Getting Started
+##  Getting Started
 
 To run the simulation, simply modify the last few lines in the main file:
 
